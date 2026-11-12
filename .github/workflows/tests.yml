@@ -25,7 +25,10 @@ jobs:
       - name: Evaluate the three reference designs
         shell: bash
         run: |
-          for c in rms doublet wide_angle; do
-            python challenge_evaluator.py examples/$c.json --challenge $c --output ${c}_result.json > /dev/null
-            python -c "import json,sys; a=json.load(open('${c}_result.json')); b=json.load(open('validation/${c}_evaluation.json')); assert a['status']=='eligible' and a['official'], a['violations']; assert abs(a['score']-b['score'])<=1e-12*b['score'], (a['score'], b['score']); print('$c', a['score'])"
-          done
+          check() {
+            python challenge_evaluator.py "examples/$1" --challenge "$2" --output result.json > /dev/null || true
+            python -c "import json,sys; a=json.load(open('result.json')); b=json.load(open('validation/$2_evaluation.json')); assert a['status']=='eligible' and a['official'], a['violations']; assert abs(a['score']-b['score'])<=1e-12*b['score'], (a['score'], b['score']); print('$1', a['score'])"
+          }
+          for c in rms doublet wide_angle; do check "$c.json" "$c"; done
+          # Optiland file with automatic real-ray clear radii, widest field
+          check wide_angle.noapertures.optiland.json wide_angle

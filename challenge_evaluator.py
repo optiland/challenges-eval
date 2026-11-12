@@ -20,10 +20,11 @@ from typing import Any
 
 import numpy as np
 
+from optiland_import import ConversionError, is_optiland_file, prescription_from_optiland
 from polychromatic_mtf import polychromatic_fft_mtf
 from prescription import build_optic, prescription_facts, validate_prescription
 
-EVALUATOR_VERSION = "2.0.0"
+EVALUATOR_VERSION = "2.1.0"
 STATUSES = (
     "eligible",                # all checks pass; ranked only if official
     "invalid_prescription",    # schema, glass, geometry or crossing surfaces
@@ -304,6 +305,22 @@ def evaluate_design(prescription: dict, challenge: str = "rms") -> dict[str, Any
         report["engine"] = engine_provenance()
         report["environment_warnings"] = list(report["engine"]["mismatch"])
         report["official"] = not report["environment_warnings"]
+        # Submissions are Optiland lens files; convert them first. The
+        # canonical prescription format is also accepted (tests, examples).
+        if is_optiland_file(prescription):
+            try:
+                prescription, notes = prescription_from_optiland(
+                    prescription, spec.fields_deg, spec.verification_step_deg, WAVELENGTHS_UM)
+            except ConversionError as exc:
+                report["status"] = "invalid_prescription"
+                report["input_format"] = "optiland"
+                report["violations"].append(str(exc))
+                return report
+            report["input_format"] = "optiland"
+            report["conversion_notes"] = notes
+        else:
+            report["input_format"] = "prescription"
+        report["prescription"] = prescription
         # Structural validity only (schema, glass keys, real caps, no crossing
         # surfaces, stop position). Thickness limits are challenge constraints
         # and are checked below, so they report constraint_failed.
@@ -469,7 +486,7 @@ def main() -> int:
     parser.add_argument("--challenge", choices=tuple(CHALLENGES), default="rms")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    result = evaluate_design(json.loads(args.prescription.read_text()), args.challenge)
+    result = evaluate_design(json.loads(args.prescription.read_text(encoding="utf-8")), args.challenge)
     output = json.dumps(result, indent=2, allow_nan=False)
     if args.output:
         args.output.write_text(output + "\n")

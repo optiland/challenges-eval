@@ -1,7 +1,7 @@
-# Optiland starter challenges: evaluator v2.0.0
+# Optiland starter challenges: evaluator v2.1.0
 
 The reference evaluator for the Optiland starter challenges, rules version
-2.0.0 (approved 12 November 2026). The same code runs on your computer and in
+2.1.0 (approved 12 November 2026). The same code runs on your computer and in
 the official judge. The original proposal was prepared on 11 November 2026;
 the history of this repository shows every change since then.
 
@@ -151,37 +151,60 @@ not run a lens optimization.
 
 ## Submission format
 
-A submission contains physical interfaces only. The judge adds the object at
-infinity and the flat sensor. The last thickness is the distance from the last
-physical interface to the sensor. Units are millimetres; `null` means a plane.
+Submit an Optiland lens file. In your notebook or script:
 
-```json
-{
-  "name": "My lens",
-  "stop_surface": 0,
-  "stop_radius_mm": 6.25,
-  "surfaces": [
-    {
-      "radius_mm": 61.1507748082,
-      "thickness_after_mm": 3.0,
-      "material_after": {"catalog": "SCHOTT", "name": "N-BAK1"},
-      "clear_radius_mm": 8.0
-    }
-  ]
-}
+```python
+from optiland.fileio import save_optiland_file
+save_optiland_file(lens, "my_lens.json")
 ```
 
-The snippet above illustrates one row, not a complete valid lens. Use the
-supplied JSON examples for complete prescriptions. `stop_surface` is zero based
-within this physical-surface list, not within an Optiland surface list that also
-contains an object surface. Each surface row states the medium following it.
-Glass names are resolved strictly in the stated frozen catalog. Arbitrary
-analysis or vignetting settings are rejected.
+Check it locally before you submit:
 
-The numeric prescription is the authoritative submission. A notebook may
-document how it was obtained, but the judge should not execute participant
-Python as part of the authoritative scoring calculation. Participants may
-use any optimizer, differentiation method, starting form or design software.
+```bash
+python challenge_evaluator.py my_lens.json --challenge rms
+```
+
+The judge reads only the optical design: spherical or plane surfaces, their
+radii and thicknesses, catalog glasses, the stop and optional physical
+apertures (`RadialAperture`). Surfaces without a physical aperture get an
+automatic clear radius from the real-ray beam footprint. Fields, wavelengths,
+vignetting factors and other analysis settings in the file are ignored; the
+judge sets them. Anything outside the challenge model (aspheres, tilts,
+mirrors, coatings, model glasses) is rejected with a clear message. See
+RULES.md, section 8.
+
+`examples/*.optiland.json` are the three reference designs as Optiland files,
+with physical apertures; `examples/*.noapertures.optiland.json` are the same
+designs without apertures. All six give the reference scores.
+
+The numeric prescription format of `examples/rms.json`, `doublet.json` and
+`wide_angle.json` is the internal format of the evaluator. `evaluate_design`
+accepts it too, but submissions use Optiland files.
+
+The judge does not run participant Python. Participants may use any optimizer,
+differentiation method, starting form or design software, as long as the final
+lens is exported as an Optiland file.
+
+## The official judge
+
+The workflow `.github/workflows/judge.yml` scores the submissions of the
+website. It runs when a participant saves a lens file (the website starts it with
+`workflow_dispatch`), every 30 minutes, and by hand from the Actions tab.
+
+- The scoring code comes from a release tag (for example `v2.1.0`), never
+  from `main`. Each challenge on the website records the evaluator version that
+  judges it.
+- Each submission runs in its own process with a timeout, on GitHub's Linux
+  runners in the locked environment, so its result is official.
+- The judge writes a result only if the submission did not change during the
+  evaluation. A new submission is judged on the next run.
+- The public log shows submission ids, statuses and scores. Prescriptions and
+  reports stay private until the deadline of the challenge.
+
+`judge/challenges.json` maps the website challenge slugs to the evaluator
+challenge names. To add a challenge: add its specification and reference
+design, release a new tag, add the tag to the workflow matrix and the slug to
+`judge/challenges.json`.
 
 ## What was tested
 
