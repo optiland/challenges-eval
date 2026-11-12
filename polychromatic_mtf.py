@@ -1,6 +1,6 @@
-"""Explicit polychromatic scalar-FFT MTF for the proposed Optiland challenges.
+"""Polychromatic scalar-FFT MTF for the Optiland challenges.
 
-This is a proposed competition evaluator, not an Optiland public API. It is
+This is part of the challenge evaluator, not an Optiland API. It is
 written and tested against commit 61f096bbf038b29a19681aabda5a061bf839b40c.
 It retains complex monochromatic OTFs, restores relative chief-ray image
 displacements, combines wavelengths, and only then takes the magnitude.
@@ -37,7 +37,7 @@ def combine_otfs(
     Args:
         otfs: Complex array shaped (wavelength, field, orientation).
         image_shifts_mm: Same shape; PSF-reference displacements in millimetres.
-        wavelength_weights: Nonnegative detected-energy weights, one per colour.
+        wavelength_weights: Nonnegative detected-energy weights, one per wavelength.
         frequency_lpmm: Common image-space frequency in cycles/mm.
 
     Returns:

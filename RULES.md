@@ -1,314 +1,252 @@
-# Challenge rules: version 2.1.0
+# Challenge rules, version 2.1.0
 
-These rules define the evaluator in this repository. The competition owner
-approved them on 12 November 2026. Version 2.1.0 (same day, before any
-submission was judged) changes only the submission format and the clear
-radius rule: submissions are Optiland lens files (section 8), and a surface
-without a physical aperture gets an automatic real-ray clear radius. Scores of an earlier rules version keep
-their earlier meaning and are not mixed with version 2 scores.
+These rules define how the evaluator in this repository judges a design.
+Section 1 lists the requirements and the score of each challenge; the other
+sections define the terms used there. The reasons behind the rules are in
+[docs/background.md](docs/background.md).
 
-## 1. Common optical model
+## 1. Challenges
 
-1. Design one centered, rotationally symmetric, sequential refractive system
-   for an object at infinity.
-2. Use only plane or spherical interfaces, homogeneous isotropic catalog
-   glass, and air. A plane is the infinite-radius case. Aspheres, mirrors,
-   diffractive or phase surfaces, GRIN, coordinate breaks, decentered surfaces,
-   custom material functions and curved sensors are outside these challenges.
-3. Use exactly one circular aperture stop. It may coincide with a physical
-   interface or be represented by one plane in an air space. Its vertex must
-   lie between the first and last refracting vertices, inclusive. A stop at a
-   glass or cemented interface is permitted in this nominal model.
-4. All fields and wavelengths must form their image on one submitted flat
-   sensor plane, perpendicular to the axis. Its position is a design variable.
-   The judge does not refocus any individual field or wavelength.
-5. Lengths are in millimetres and field angles in degrees. The wavelength
-   values are exactly 0.4861327, 0.5875618 and 0.6562725 micrometres, with the
-   middle wavelength primary. Each wavelength has weight 1/3.
-6. Use the pinned catalog records at their packaged reference conditions.
-   Specify both catalog and material name. Fuzzy substitutions and custom
-   optical constants are not permitted. The judge uses the real refractive
-   indices supplied by those records. AIR is modeled as n=1, k=0. No thermal
-   or pressure correction is applied.
-7. The model is unpolarized and has no user-supplied coatings or apodization.
-   Catalog absorption remains in the scalar diffraction pupil amplitudes.
-   The geometric RMS measure is separately defined in Section 4.
+| Requirement | RMS (`rms`) | Doublet (`doublet`) | Wide angle (`wide_angle`) |
+|---|---|---|---|
+| EFL | 50 mm ±1% | 100 mm ±1% | 24 mm ±2% |
+| Nominal f-number | 4 ±2% | 8 ±2% | 4 ±5% |
+| Glass elements | 3 to 6 | Exactly 2 | 5 to 8 |
+| BFD | At least 10 mm | At least 60 mm | At least 12 mm |
+| Total track | At most 80 mm | No limit | At most 80 mm |
+| Absolute distortion | At most 2% | At most 0.5% | At most 2% |
+| Scoring semi-fields | 0, 7, 10, 12, 14° | 0, 1.5, 3° | 0, 10, 20, 30° |
+| Verification semi-fields | 0 to 14° in 1° steps | 0 to 3° in 0.25° steps | 0 to 30° in 1° steps |
+| Other | | EPD 12.5 mm; axial F–C at most 0.10 mm; crown/flint pair | Full 60° field |
 
-## 2. Mechanical geometry
+A design that meets every requirement gets a score. Lower is better:
 
-1. Clear radius of each physical surface:
-   - If the submitted file gives the surface a physical aperture
-     (`RadialAperture`), its `r_max` is the clear radius. The judge uses that
-     fixed circular aperture; it does not enlarge apertures after tracing.
-   - If not, the judge sets an automatic clear radius: the largest real-ray
-     height on that surface, over the full pupil (32 Gauss rings by 128
-     azimuths, plus 720 rays on the rim at normalized radius 1.0), at every
-     verification field and wavelength, multiplied by 1.001. Paraxial
-     semi-apertures are not used: real rays can be more than 25% higher at
-     wide field angles.
-2. The stop radius follows from the aperture definition of the file:
-   `float_by_stop_size` gives the stop diameter; `EPD` and `imageFNO` give the
-   stop radius from the paraxial marginal ray at the stop. After that the
-   judge keeps the stop fixed. The stop may be smaller than the glass blank on
-   which it lies.
-3. An element is one non-air interval between physical interfaces. A
-   cemented doublet has two elements and one shared internal interface.
-   A zero-thickness fictitious glass interval is not an element. Adjacent
-   identical-material interfaces are rejected; the sole allowed same-medium
-   dummy interface is the plane AIR-to-AIR stop.
-4. The mechanical radius of an air-spaced element is the larger of its two
-   face clear radii. A contiguous cemented group has the largest clear radius
-   of all its faces as its common mechanical radius. This defines the
-   cylindrical-blank geometry used for edge thickness and overlap checks.
-5. Every glass interval must have at least 2 mm center thickness and 1 mm
-   edge thickness at its mechanical radius.
-6. A spherical cap must be real over its mechanical radius, with
+```
+RMS:        M = mean_i((R_i / 0.025 mm)^2)
+Doublet:    M = mean_i((R_i / 0.020 mm)^2)
+Wide angle: M = mean over fields and both directions of (1 - MTF(20 lp/mm))^2
+```
+
+R_i is the polychromatic RMS spot radius and MTF the polychromatic diffraction
+MTF at scoring field i (section 6). A design that fails any requirement gets
+no score. There is no penalty term. You can still use penalties in your own
+optimizer.
+
+### Doublet details
+
+- The EPD must be 12.5 mm, with a numerical allowance of 1e-6 mm. Together with
+  the EFL range, this already keeps the f-number between 7.92 and 8.08.
+- Either element order is allowed, cemented or air-spaced.
+- The two glasses must have different Abbe numbers. The glass with the larger
+  Abbe number must form the positive element and the other glass the negative
+  one, each taken as an isolated thick lens in air:
+
+  ```
+  V_d = (n_d - 1) / (n_F - n_C)
+  Phi = (n_d - 1) * (1/R1 - 1/R2 + (n_d - 1)*t/(n_d*R1*R2))
+  ```
+
+  A plane surface has zero curvature. This test uses the glass data, not the
+  glass name.
+
+## 2. Submission
+
+Submit an Optiland lens file written with
+`optiland.fileio.save_optiland_file(lens, "my_lens.json")`. The judge reads
+only the optical design:
+
+- the object surface, at infinity, and a flat, untilted image surface;
+- for each lens surface: spherical (`StandardGeometry` with conic 0) or plane
+  geometry, radius, thickness, `is_stop`, the material after the surface, and
+  an optional `RadialAperture` with `r_min` = 0;
+- the aperture type: `float_by_stop_size`, `EPD` or `imageFNO`.
+
+A material is a catalog glass (`Material` with a name and a catalog or
+reference) or air (`IdealMaterial` with index 1 and no absorption). Glass
+names must match the pinned catalog exactly.
+
+The judge ignores fields, wavelengths, vignetting factors, ray aiming,
+apodization, solves and pickups in the file and lists them in
+`conversion_notes`. It rejects tilted or decentered surfaces, aspheres,
+mirrors, coatings, scattering models, other materials and other aperture
+types as `invalid_prescription`. The report contains the converted
+prescription that was judged.
+
+## 3. Optical model
+
+1. One centered, rotationally symmetric, sequential refractive system with the
+   object at infinity.
+2. Plane or spherical surfaces, catalog glass and air only. Aspheres, mirrors,
+   diffractive surfaces, GRIN, coordinate breaks, decentered surfaces, custom
+   materials and curved sensors are not allowed.
+3. Exactly one circular aperture stop. It can lie on a lens surface (also a
+   glass or cemented surface) or on a plane in an air space. It must lie
+   between the first and the last lens surface, both included.
+4. All fields and wavelengths use one flat sensor plane, perpendicular to the
+   axis. You choose its position. The judge does not refocus any field or
+   wavelength.
+5. Lengths are in mm and field angles in degrees. The wavelengths are
+   0.4861327, 0.5875618 (primary) and 0.6562725 µm, each with weight 1/3.
+6. Glass data comes from the catalog pinned with Optiland, at its reference
+   conditions, with no thermal or pressure correction. Air has n = 1, k = 0.
+7. The model is unpolarized, with no coatings or apodization. Catalog
+   absorption is kept in the diffraction calculation only.
+
+## 4. Mechanical geometry
+
+1. **Clear radius.** If a surface has a `RadialAperture`, its `r_max` is the
+   clear radius, and the judge does not enlarge it. Otherwise the judge sets
+   the clear radius to the largest real-ray height on that surface, times
+   1.001. It traces the full pupil (32 rings by 128 azimuths, plus 720 rays on
+   the rim) at every verification field and wavelength. Paraxial heights are
+   not used, because real rays can be more than 25% higher at wide angles.
+2. **Stop radius.** `float_by_stop_size` gives the stop diameter directly.
+   For `EPD` and `imageFNO`, the judge calculates the stop radius from the
+   paraxial marginal ray, then keeps it fixed. The stop can be smaller than
+   the lens on which it lies.
+3. **Elements.** An element is one glass interval between two surfaces. A
+   cemented doublet has two elements that share one surface. A zero-thickness
+   glass interval is not an element. Two adjacent surfaces with the same
+   medium on both sides are rejected, except a plane stop surface in air.
+4. **Mechanical radius.** For an air-spaced element, the larger of its two
+   clear radii. For a cemented group, the largest clear radius of all its
+   surfaces.
+5. **Thickness.** Each glass element needs at least 2 mm center thickness and
+   1 mm edge thickness at its mechanical radius.
+6. **Real caps.** Each spherical surface needs
    `mechanical_radius < abs(radius_of_curvature)`.
-7. Use the vertex-connected cap. For signed R and radial coordinate r, its
-   sag is `s(R,r) = r^2 / (R * (1 + sqrt(1 - r^2/R^2)))`; plane sag is zero.
-   For two interfaces with axial spacing t, their separation is
-   `g(r) = t + s_back(r) - s_front(r)`.
-8. Physical caps must not cross over their shared mechanical radius. The
-   judge checks all physical cap pairs, including large surfaces separated
-   by a smaller stop. For this centered spherical/plane cap model, checking
-   axis and edge gives the minimum separation. Numerical comparisons allow
-   1e-9 mm; this is not a manufacturing tolerance.
-9. Air spacings may be zero if the surfaces do not cross. Cemented contacts
-   are represented by a single shared interface rather than duplicate
-   zero-gap spherical interfaces. Mount clearances, bevels and glue-layer
-   thickness are outside the nominal benchmark.
-10. BFD is the axial distance from the last refracting vertex to the submitted
-    sensor. Total track is the axial distance from the first refracting
-    vertex to that sensor. Neither quantity is an effective focal length.
+7. **No crossing.** With sag `s(R, r) = r^2 / (R * (1 + sqrt(1 - r^2/R^2)))`
+   (zero for a plane), two surfaces with axial spacing t are separated by
+   `g(r) = t + s_back(r) - s_front(r)`. This must not be negative at the axis
+   or at the smaller mechanical radius of the two. The judge checks all
+   surface pairs, also large lenses on both sides of a small stop. The
+   numerical allowance is 1e-9 mm.
+8. **Air spaces** can be zero if the surfaces do not cross. Model a cemented
+   contact as one shared surface, not two surfaces with zero gap. Mounts,
+   bevels and glue layers are not modeled.
+9. **BFD** is the axial distance from the last lens surface to the sensor.
+   **Total track** is the axial distance from the first lens surface to the
+   sensor.
 
-## 3. Vignetting and ray validation
+## 5. Vignetting and ray checks
 
-**Mechanical vignetting is not permitted.** The full prescribed pupil must
-pass the fixed clear apertures for the stated verification fields and
-wavelengths. Natural off-axis illumination falloff is allowed; no relative-
-illumination or total-transmission requirement is implied by this rule.
+**Mechanical vignetting is not allowed.** The full pupil must pass every clear
+aperture at every verification field and wavelength. Natural illumination
+falloff off-axis is allowed.
 
-The judge reconstructs all field vignetting factors as zero. It fixes the
-actual stop diameter with Optiland's `float_by_stop_size` aperture and uses
-robust real-ray aiming with at most 50 iterations and a 1e-9 mm solver
-tolerance. Paraxial entrance-pupil diameter is then measured, not used to
-resize the submitted physical stop.
+The judge sets all field vignetting factors to zero, fixes the stop size with
+`float_by_stop_size`, and uses robust ray aiming (at most 50 iterations,
+tolerance 1e-9 mm). It then measures the paraxial entrance pupil; it does not
+resize the stop.
 
-The geometric pupil sample is a full disk: 16 Gauss-Legendre rings in squared
-normalized stop radius and 64 equally spaced azimuths, for 1,024 weighted
-samples. The weights sum to one. Verification adds a chief ray and 256 equally
-spaced rim rays at normalized radius 0.999999. Rim and chief rays verify the
-bundle; they are not additional nonzero-weight RMS samples.
+Pupil sampling: 16 Gauss-Legendre rings in squared normalized stop radius by
+64 azimuths, 1,024 samples with weights that sum to one. For the checks only,
+the judge adds the chief ray and 256 rim rays at normalized radius 0.999999.
 
-Verification fields are:
+At every surface and at the sensor, each ray must have finite coordinates and
+direction cosines and positive intensity. A missing, blocked, totally
+internally reflected or failed ray fails the design; it cannot be dropped.
+The judge also checks that each ray travels forward (allowance 1e-8 mm), hits
+the correct spherical cap (1e-7 mm), and hits the stop where it was aimed
+(1e-7 mm). Ray aiming must converge. The denser RMS grid and the pupil
+samples of both MTF calculations get the same checks.
 
-| Challenge | Verification semi-field angles |
-|---|---|
-| RMS | 0 through 14 degrees in 1-degree steps |
-| Doublet | 0 through 3 degrees in 0.25-degree steps |
-| Wide angle | 0 through 30 degrees in 1-degree steps |
+These finite grids are reproducible tests, not a proof that no ray anywhere
+is clipped. The allowances are numerical, not manufacturing tolerances.
 
-Every combination is traced at all three wavelengths. At every physical
-interface and at the sensor, required samples must have finite coordinates
-and direction cosines and positive intensity. A missing, blocked, totally
-internally reflected or failed ray cannot be removed to improve the score.
-
-The judge also checks forward travel along each ray (allowance 1e-8 mm), the
-vertex-connected spherical cap (residual at most 1e-7 mm), and the requested
-stop intersection (residual at most 1e-7 mm). Ray aiming must report convergence.
-
-The denser RMS quadrature and the actual scalar-FFT pupil nodes must also pass
-the ray checks. The latter are checked immediately after their full-pupil
-traces, before subsequent reference-ray traces overwrite the snapshots.
-
-These finite grids define reproducible acceptance checks. They do not prove
-continuous clearance for every unsampled ray and field. The numerical
-tolerances above are calculation tolerances, not fabrication tolerances.
-
-## 4. Common image-quality definitions
+## 6. Definitions
 
 ### Polychromatic RMS spot radius
 
-For field i, wavelength k and pupil sample j, let r_ikj be the two-dimensional
-sensor intersection. Let q_j be the normalized pupil-area weight. Define
+For field i, wavelength k and pupil sample j, let r_ikj be the 2D position on
+the sensor and q_j the pupil-area weight:
 
 ```
 c_i   = (1/3) sum_k sum_j q_j r_ikj
 R_i^2 = (1/3) sum_k sum_j q_j ||r_ikj - c_i||^2
 ```
 
-R_i is a radius in millimetres. A single combined centroid is used at each
-field. Independently centering each wavelength is not permitted, since that would
-remove lateral chromatic aberration from the blur measure. This is a geometric stop-area
-measure; ray intensity is used for validity, not to suppress aberrated rays
-through a user-chosen weighting.
-
-Scoring fields have equal weights that sum to one. Verification fields do not
-receive extra score weight merely because there are more of them.
+All wavelengths share one centroid per field, so lateral chromatic aberration
+counts in the spot size. Ray intensity is used to check rays, not to weight
+them. All scoring fields have equal weight.
 
 ### Distortion
 
-Use the real d-line chief ray aimed through the physical stop center. For
-nonzero field angle theta,
+From the real d-line chief ray through the stop center, at field angle theta:
 
 ```
 D(theta) = y_chief,d(theta) / (f_d * tan(theta)) - 1
 ```
 
-The implementation converts degrees to radians for tan. D is a fraction:
-0.02 means 2%. Define D(0)=0 by convention. Apply limits to abs(D), so both
-barrel and pincushion distortion count. Check the limit at every verification
-field. The ideal mapping is tied to d-line EFL, not to a separately fitted
-plate scale at the submitted sensor.
+D is a fraction (0.02 = 2%), D(0) = 0, and the limit applies to abs(D) at every
+verification field. f_d is the d-line EFL.
 
-### First-order quantities and axial chromatic aberration
+### First-order quantities
 
-Compute EFL at 0.5875618 micrometres. Nominal f-number is positive EFL divided
-by the absolute paraxial entrance-pupil diameter. Check the submitted physical
-stop against this definition.
-
-For each wavelength, trace a collimated paraxial axial ray and obtain its focus
-offset from the common sensor as `-y/u`. The difference between the F and C
-focus positions is the primary axial chromatic aberration measure. It is not the difference
-between their effective focal lengths.
+EFL is calculated at 0.5875618 µm. The nominal f-number is EFL divided by the
+paraxial entrance-pupil diameter. The axial F–C separation is the difference
+between the paraxial F and C focus positions (`-y/u` of an axial ray, relative
+to the sensor). It is not the difference of the focal lengths.
 
 ### Polychromatic diffraction MTF
 
-Use Optiland's scalar pupil FFT with a 256-point grid across the pupil diameter
-and an explicitly padded 1024-by-1024 FFT. Keep the submitted image plane and
-use the chief-ray reference with `remove_tilt=False`.
+Optiland scalar pupil FFT with 256 samples across the pupil, padded to a
+1024 × 1024 FFT, at the submitted sensor, chief-ray reference, `remove_tilt=False`.
 
-Compute a complex OTF for each wavelength and each direction. Register all
-wavelengths in the same physical sensor coordinates, retaining their chief-ray
-image shifts and the sign of the pupil-to-image mapping. Interpolate complex
-OTF components at 20 cycles/mm on each direction's physical frequency axis.
-Then combine the complex OTFs with equal detected-energy weights and take
-the magnitude. Do not average monochromatic MTF magnitudes.
+For each wavelength and direction, the judge calculates the complex OTF at
+20 cycles/mm in sensor coordinates, keeps the image shift of each wavelength,
+combines the three OTFs with equal weights and then takes the magnitude.
+Averaging MTF magnitudes is not allowed. Tangential is the image-y direction
+and sagittal the image-x direction; the score uses both. Each OTF is
+normalized by its own detected energy.
 
-Tangential means image-y spatial modulation for these y-meridional fields;
-sagittal means image-x modulation. The score includes both directions.
-Catalog absorption affects the monochromatic pupil amplitudes; each OTF is
-normalized by its own detected energy. This is a three-wavelength nominal
-contrast benchmark, not a spectral throughput or sensor-response model.
+## 7. Numerical checks and result status
 
-## 5. Challenge-specific requirements and scores
+The engine is Optiland commit `61f096bbf038b29a19681aabda5a061bf839b40c` with
+its packaged catalog. `engine_lock.json` holds a SHA-256 digest of the engine
+files and catalog data, and `requirements.txt` pins the numerical packages.
+The judge calculates on the NumPy CPU backend.
 
-| Requirement | RMS | Doublet | Wide angle |
-|---|---|---|---|
-| EFL | 50 mm +/-1% | 100 mm +/-1% | 24 mm +/-2% |
-| Nominal f-number | 4 +/-2% | 8 +/-2% | 4 +/-5% |
-| Glass elements | 3-6 | Exactly 2 | 5-8 |
-| BFD | At least 10 mm | At least 60 mm | At least 12 mm |
-| Total track | At most 80 mm | No added limit | At most 80 mm |
-| Absolute distortion | At most 2% | At most 0.5% | At most 2% |
-| Scoring semi-fields | 0, 7, 10, 12, 14 degrees | 0, 1.5, 3 degrees | 0, 10, 20, 30 degrees |
-| Other conditions | Common rules | EPD 12.5 mm; axial F-C <=0.10 mm | Covers full 60-degree field |
+Convergence checks:
 
-The EPD equality for the doublet uses a numerical allowance of 1e-6 mm. Given
-the EFL range, it already implies an f-number range of 7.92 to 8.08, inside the
-stated f/8 +/-2% range. It is intentionally retained and documented as a
-redundant first-order check.
+- **RMS:** recalculated on 32 rings by 128 azimuths. At each scoring field the
+  change must be at most the larger of 1e-8 mm and 0.1%.
+- **MTF:** recalculated with 512 pupil samples and a 2048 × 2048 FFT. Each
+  value may change by at most 0.005.
 
-For the doublet, either element order and either cemented or air-spaced form
-are allowed. The glass with the larger Abbe number must form a positive
-isolated thick element in air, and the lower-Abbe glass a negative one. The
-two Abbe numbers must differ. Use the exact stated F/d/C wavelengths and
-the isolated thick-lens power
+If a check passes, the score from the normal grid stands.
 
-```
-V_d = (n_d - 1) / (n_F - n_C)
-Phi = (n_d - 1) * (1/R1 - 1/R2 + (n_d - 1)*t/(n_d*R1*R2))
-```
-
-Plane curvatures are zero. This gives an operational crown/flint definition
-that can be checked without relying on a material name's spelling.
-
-For eligible designs, the scores are exactly:
-
-```
-RMS:        M = mean_i((R_i / 0.025 mm)^2)
-Doublet:    M = mean_i((R_i / 0.020 mm)^2)
-Wide angle: M = mean_over_fields_and_two_directions((1 - MTF_i,direction(20 lp/mm))^2)
-```
-
-Lower is better. No penalty P is added to an eligible score. A constraint
-failure yields no ranked score. Entrants may still use any penalty function
-they find useful inside their own optimizer.
-
-## 6. Numerical verification and result status
-
-The reference engine is Optiland commit
-`61f096bbf038b29a19681aabda5a061bf839b40c` with the catalog packaged at that
-commit. `engine_lock.json` records and verifies a SHA-256 digest over the
-engine Python files and catalog data. The required numerical dependencies are
-pinned in the supplied requirements. NumPy CPU floating-point evaluation is
-used; entrant GPU/optimizer precision does not change the judging backend.
-
-Re-evaluate geometric RMS on 32 radial rings by 128 azimuths. At each scoring
-field the change must be no more than the larger of 1e-8 mm and 0.1% of the
-denser RMS. Keep the declared 16-by-64 score if this check passes.
-
-For MTF, repeat with a 512-point pupil diameter and 2048-by-2048 FFT. Every
-field/direction must change by at most 0.005 absolute MTF. Keep the declared
-256-by-1024 score if this check passes. This is a sampling-consistency gate,
-not an independent validation of the scalar pupil-FFT approximation.
-
-The report contains `eligible`, `official`, `status`, `score`, `violations`,
-constraint values and limits, per-field metrics, ray counts, convergence
-results and engine provenance. `status` is exactly one of:
+The report contains `status`, `official`, `score`, `violations`, all
+constraint values and limits, per-field results, ray counts, convergence
+results and engine provenance. `status` is one of:
 
 | Status | Meaning |
 |---|---|
 | `eligible` | All checks pass. |
-| `invalid_prescription` | The file is not a valid prescription: schema, glass name, spherical cap, crossing surfaces or stop position. |
-| `constraint_failed` | A challenge requirement fails: EFL, f-number, element count, BFD, track, thickness, distortion, EPD, axial chromatic aberration or glass pair. |
+| `invalid_prescription` | The file is not a valid design: format, glass name, spherical cap, crossing surfaces or stop position. |
+| `constraint_failed` | A requirement fails: EFL, f-number, elements, BFD, track, thickness, distortion, EPD, axial F–C or glass pair. |
 | `ray_validation_failed` | A required ray is blocked, lost, totally internally reflected or mis-aimed. |
-| `needs_numerical_review` | All requirements pass, but a convergence gate fails. A maintainer reviews the design. |
+| `needs_numerical_review` | All requirements pass, but a convergence check fails. A maintainer reviews the design. |
 | `evaluator_error` | The evaluator failed. |
 
-`official` is true only in the locked environment (engine digest, NumPy and
-SciPy versions). Outside it, the evaluator still calculates every metric and
-lists the differences in `environment_warnings`. Only an `eligible` and
-`official` result has a ranked `score`. An eligible result outside the
-locked environment has `unofficial_score` instead. `diagnostic_optical_score`,
-when present for a design that is not eligible, must never be treated as a
-leaderboard score.
+`official` is true only in the pinned environment (engine digest, NumPy and
+SciPy versions). Elsewhere the evaluator still calculates everything, lists
+the differences in `environment_warnings`, and gives an `unofficial_score`
+instead of `score`. A `diagnostic_optical_score` on a design that is not
+eligible is never a leaderboard score.
 
-## 7. Publication and review
+## 8. Leaderboard
 
-Publish the rules, source, environment lock and all three reference results
-together. The judge's numeric prescription is authoritative; an accompanying
-notebook may explain the optimization but cannot replace the judge.
+- One leaderboard uses one evaluator version only.
+- Per-field results and constraint margins are published with each score.
+- Before prizes are given, the leading designs are reviewed, cross-checked
+  and evaluated on a denser grid.
 
-Use only one evaluator version on a leaderboard. Publish per-field results
-and constraint margins with each score, so a single scalar does not conceal
-weak edge performance. Before prize decisions, inspect and independently
-cross-check leading prescriptions, and use the same denser verification for
-close contenders. The package implements per-design evaluation, not the
-hosting or prize-adjudication process.
+## Versions
 
-## 8. Submission format
+- **2.1.0** (12 November 2026, before any design was judged): submissions are
+  Optiland lens files; surfaces without a physical aperture get an automatic
+  real-ray clear radius.
+- **2.0.0** (12 November 2026): first version of these rules.
 
-A submission is an Optiland lens file, written with
-`optiland.fileio.save_optiland_file(lens, "my_lens.json")`. The judge reads
-only the optical design from it:
-
-- the object surface (thickness must be infinite) and a flat, untilted image
-  surface;
-- for each lens surface: spherical (`StandardGeometry`, conic 0) or plane
-  geometry, radius, thickness, `is_stop`, the material after the surface, and
-  an optional `RadialAperture` (`r_min` = 0);
-- the aperture definition: `float_by_stop_size`, `EPD` or `imageFNO`.
-
-Materials: a catalog glass (`Material` with a name and a catalog or
-reference), or air (`IdealMaterial` with index 1 and no absorption). Glass
-names are resolved strictly in the frozen catalog.
-
-The judge ignores fields, wavelengths, vignetting factors, ray aiming,
-apodization, solves and pickups in the file and lists them in
-`conversion_notes`. It rejects decentered or tilted surfaces, aspheres,
-mirrors, coatings, scattering models, other materials and other aperture
-types with `invalid_prescription`.
-
-The report contains the converted prescription (`prescription`) that was
-judged, and a note for each automatic clear radius.
+Scores from different rules versions are never mixed.

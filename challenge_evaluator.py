@@ -1,8 +1,8 @@
-"""Deterministic reference evaluator for a proposed v2 Optiland starter pack.
+"""Evaluator of the Optiland challenges (rules in RULES.md).
 
-This is a reviewable proposal, not the evaluator used by the live website.
-The public input is a numeric prescription. Optimizer settings are never read.
-All lengths are millimetres, wavelengths micrometres, and field angles degrees.
+Input: an Optiland lens file or a numeric prescription. Output: a JSON report
+with the status and the score. Lengths are in mm, wavelengths in micrometres
+and field angles in degrees.
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ MTF_CONVERGENCE_ABS = 0.005
 
 @dataclass(frozen=True)
 class Challenge:
-    """Frozen specification for one proposed challenge."""
+    """Requirements of one challenge (RULES.md, section 1)."""
 
     fields_deg: tuple[float, ...]
     verification_step_deg: float

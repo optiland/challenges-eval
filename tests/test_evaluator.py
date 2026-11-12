@@ -1,4 +1,4 @@
-"""Behavioral checks of the proposed benchmark, using actual Optiland traces."""
+"""Evaluator checks with real Optiland traces."""
 
 import copy
 import json

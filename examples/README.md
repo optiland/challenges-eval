@@ -1,48 +1,46 @@
-# Reference prescriptions
+# Reference designs
 
-These are feasible regression examples for the proposed v2 rules. They are not
-optimized entries or claims about the attainable best score. The complete
-reference evaluation reports are in `../validation/`.
+One valid design per challenge. They show that the requirements can be met
+and serve as regression tests. They are not optimized, so their scores are
+easy to beat.
 
-## RMS challenge: rms.json
+| Challenge | File | Based on | Score |
+|---|---|---|---:|
+| `rms` | `rms.json` | Optiland `CookeTriplet` | 6.040034708678789 |
+| `doublet` | `doublet.json` | Optiland `CementedAchromat` (Laikin, *Lens Design*, 4th ed., p. 45) | 0.18106844456019955 |
+| `wide_angle` | `wide_angle.json` | Optiland `ReverseTelephoto` | 0.7033100380293447 |
 
-Derived from Optiland's `CookeTriplet` at the pinned commit. To provide a simple
-valid example, the glass center thicknesses were changed to 5, 2 and 5 mm, clear
-radii to 11, 7 and 9 mm, and all radii multiplied by 1.0097785005714526. A short
-one-dimensional paraxial root solve set EFL to 50 mm. The physical stop was set
-to give a 12.5 mm paraxial entrance pupil, and the sensor placed at d-line
-paraxial focus. No image-quality optimization was performed.
+Each design is also stored as an Optiland lens file, the format you submit:
 
-Reference score: 6.040034708678789 (lower is better).
+- `<name>.optiland.json` has a physical aperture on every surface;
+- `<name>.noapertures.optiland.json` has none, so the judge calculates the
+  clear radii.
 
-## Doublet: doublet.json
+Both give the score above. `make_optiland_exports.py` writes them from the
+`<name>.json` files. The `<name>.json` files use the internal prescription
+format of the evaluator. The full reports are in [`../validation/`](../validation/).
 
-Derived from Optiland's `CementedAchromat`, whose source cites Milton Laikin,
-*Lens Design*, 4th edition, page 45. See `doublet_design_note.md` for the exact
-construction and independent checks. A short paraxial solve set EFL and F-C
-primary axial colour after scaling and increasing glass thicknesses.
+## How the designs were made
 
-Reference score: 0.18106844456019955 (lower is better).
+**RMS.** Glass center thicknesses set to 5, 2 and 5 mm, clear radii to 11, 7
+and 9 mm, and all radii scaled by 1.0097785005714526 to give 50 mm EFL. The
+stop gives a 12.5 mm entrance pupil, and the sensor is at the d-line paraxial
+focus.
 
-## Wide angle: wide_angle.json
+**Doublet.** Radii scaled by 5, crown and flint center thicknesses set to 3.0
+and 2.1 mm, then the first two radii solved for 100 mm EFL and equal F and C
+focus. Details in [doublet_design_note.md](doublet_design_note.md).
 
-Derived from Optiland's `ReverseTelephoto`. The example was scaled, its glass
-thicknesses increased to meet the rules, its front negative lens bent to permit
-the required clear aperture, and its EFL restored to 24 mm by a scalar radius
-adjustment. Its single sensor was shifted by -0.2 mm from d-line paraxial focus.
-This yields a geometry-compliant example with 6 elements, f/4, BFD 24.54395473 mm
-and track 66.68649089 mm. No image-quality optimization campaign was run.
+**Wide angle.** Scaled, glass made thicker to meet the thickness rules, front
+negative lens bent to pass the full aperture, radii scaled back to 24 mm EFL,
+and the sensor moved by -0.2 mm along the axis from the d-line paraxial focus.
+Six elements, f/4, BFD 24.54395473 mm, track 66.68649089 mm.
 
-Reference score: 0.7033100380293447. The largest absolute MTF change on the
-512-pupil/2048-FFT verification grid was 0.0006485828493, below the 0.005 gate.
-The full evaluation took 77.4 seconds on the test machine.
+No image-quality optimization was run on any of them.
 
-## Source attribution
+## Source
 
-Optiland source is distributed under its MIT license. These numeric examples
-derive from the sample prescriptions at:
-
-- https://github.com/optiland/optiland/blob/61f096bbf038b29a19681aabda5a061bf839b40c/optiland/samples/simple.py
-- https://github.com/optiland/optiland/blob/61f096bbf038b29a19681aabda5a061bf839b40c/optiland/samples/objectives.py
-
-The original Optiland license is included in `../OPTILAND_LICENSE.txt`.
+The designs derive from Optiland samples at commit `61f096bb`
+([simple.py](https://github.com/optiland/optiland/blob/61f096bbf038b29a19681aabda5a061bf839b40c/optiland/samples/simple.py),
+[objectives.py](https://github.com/optiland/optiland/blob/61f096bbf038b29a19681aabda5a061bf839b40c/optiland/samples/objectives.py)),
+used under the Optiland MIT license ([`../OPTILAND_LICENSE.txt`](../OPTILAND_LICENSE.txt)).
