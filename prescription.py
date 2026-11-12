@@ -1,6 +1,5 @@
-"""Canonical centered spherical prescriptions for the proposed challenges.
+"""Numeric prescriptions of centered spherical lenses for the challenges.
 
-This is an external benchmark adapter, not an Optiland core modification.
 Lengths are millimetres and wavelengths are micrometres.  A JSON prescription
 contains physical surfaces only; the infinite object and flat image are added
 by ``build_optic``.  A null radius denotes a plane.

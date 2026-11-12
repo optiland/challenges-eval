@@ -19,7 +19,7 @@ from prescription import (
 
 
 def _doublet():
-    return json.loads((Path(__file__).parent / "examples" / "doublet.json").read_text())
+    return json.loads((Path(__file__).resolve().parents[1] / "examples" / "doublet.json").read_text())
 
 
 def test_spherical_sag_has_signed_curvature_and_plane_limit():
