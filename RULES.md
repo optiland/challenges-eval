@@ -138,8 +138,8 @@ R_i^2 = (1/3) sum_k sum_j q_j ||r_ikj - c_i||^2
 ```
 
 R_i is a radius in millimetres. A single combined centroid is used at each
-field. Independently centering each colour is not permitted, since that would
-remove lateral colour from the blur measure. This is a geometric stop-area
+field. Independently centering each wavelength is not permitted, since that would
+remove lateral chromatic aberration from the blur measure. This is a geometric stop-area
 measure; ray intensity is used for validity, not to suppress aberrated rays
 through a user-chosen weighting.
 
@@ -161,15 +161,15 @@ barrel and pincushion distortion count. Check the limit at every verification
 field. The ideal mapping is tied to d-line EFL, not to a separately fitted
 plate scale at the submitted sensor.
 
-### First-order quantities and axial colour
+### First-order quantities and axial chromatic aberration
 
 Compute EFL at 0.5875618 micrometres. Nominal f-number is positive EFL divided
 by the absolute paraxial entrance-pupil diameter. Check the submitted physical
 stop against this definition.
 
-For each colour, trace a collimated paraxial axial ray and obtain its focus
+For each wavelength, trace a collimated paraxial axial ray and obtain its focus
 offset from the common sensor as `-y/u`. The difference between the F and C
-focus positions is the primary axial-colour measure. It is not the difference
+focus positions is the primary axial chromatic aberration measure. It is not the difference
 between their effective focal lengths.
 
 ### Polychromatic diffraction MTF
@@ -179,7 +179,7 @@ and an explicitly padded 1024-by-1024 FFT. Keep the submitted image plane and
 use the chief-ray reference with `remove_tilt=False`.
 
 Compute a complex OTF for each wavelength and each direction. Register all
-colours in the same physical sensor coordinates, retaining their chief-ray
+wavelengths in the same physical sensor coordinates, retaining their chief-ray
 image shifts and the sign of the pupil-to-image mapping. Interpolate complex
 OTF components at 20 cycles/mm on each direction's physical frequency axis.
 Then combine the complex OTFs with equal detected-energy weights and take
@@ -261,7 +261,7 @@ results and engine provenance. `status` is exactly one of:
 |---|---|
 | `eligible` | All checks pass. |
 | `invalid_prescription` | The file is not a valid prescription: schema, glass name, spherical cap, crossing surfaces or stop position. |
-| `constraint_failed` | A challenge requirement fails: EFL, f-number, element count, BFD, track, thickness, distortion, EPD, axial colour or glass pair. |
+| `constraint_failed` | A challenge requirement fails: EFL, f-number, element count, BFD, track, thickness, distortion, EPD, axial chromatic aberration or glass pair. |
 | `ray_validation_failed` | A required ray is blocked, lost, totally internally reflected or mis-aimed. |
 | `needs_numerical_review` | All requirements pass, but a convergence gate fails. A maintainer reviews the design. |
 | `evaluator_error` | The evaluator failed. |
