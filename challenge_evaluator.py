@@ -23,7 +23,15 @@ import numpy as np
 from polychromatic_mtf import polychromatic_fft_mtf
 from prescription import build_optic, prescription_facts, validate_prescription
 
-EVALUATOR_VERSION = "2.0.0-proposal"
+EVALUATOR_VERSION = "2.0.0"
+STATUSES = (
+    "eligible",                # all checks pass; ranked only if official
+    "invalid_prescription",    # schema, glass, geometry or crossing surfaces
+    "constraint_failed",       # EFL, F/#, BFD, thickness, distortion, ...
+    "ray_validation_failed",   # a required ray is blocked, lost or mis-aimed
+    "needs_numerical_review",  # passes, but a convergence gate failed
+    "evaluator_error",         # the evaluator itself failed
+)
 OPTILAND_COMMIT = "61f096bbf038b29a19681aabda5a061bf839b40c"
 WAVELENGTHS_UM = (0.4861327, 0.5875618, 0.6562725)
 PRIMARY_UM = WAVELENGTHS_UM[1]
@@ -260,11 +268,17 @@ def _constraint(report, label, value, minimum=None, maximum=None, tolerance=1e-9
 
 
 def evaluate_design(prescription: dict, challenge: str = "rms") -> dict[str, Any]:
-    """Rebuild, validate, and score a proposed challenge submission.
+    """Rebuild, validate, and score a challenge submission.
 
     A result is eligible only if all geometric, optical and convergence checks
-    pass. Invalid designs return score=None and explicit violations. This
-    function never optimizes, changes the submitted sensor plane, or publishes.
+    pass. This function never optimizes, changes the submitted sensor plane,
+    or publishes.
+
+    ``status`` is one of ``STATUSES``. ``official`` is True only in the
+    locked reference environment. ``score`` is set only for an eligible design
+    in the reference environment; it is the only value a leaderboard may rank.
+    An eligible design in another environment gets ``unofficial_score``
+    instead, so participants can check their design anywhere.
     """
     if challenge not in CHALLENGES:
         raise ValueError(f"challenge must be one of {tuple(CHALLENGES)}")
@@ -274,7 +288,8 @@ def evaluate_design(prescription: dict, challenge: str = "rms") -> dict[str, Any
     spec = CHALLENGES[challenge]
     report: dict[str, Any] = {
         "evaluator_version": EVALUATOR_VERSION, "challenge": challenge,
-        "eligible": False, "status": "invalid", "score": None, "violations": [], "constraints": [],
+        "eligible": False, "official": False, "status": "evaluator_error", "score": None,
+        "violations": [], "constraints": [], "environment_warnings": [],
         "settings": {
             "wavelengths_um": list(WAVELENGTHS_UM), "spectral_weights": [1 / 3] * 3,
             "fields_deg": list(spec.fields_deg), "field_weights": [1 / len(spec.fields_deg)] * len(spec.fields_deg),
@@ -287,17 +302,24 @@ def evaluate_design(prescription: dict, challenge: str = "rms") -> dict[str, Any
     }
     try:
         report["engine"] = engine_provenance()
-        if report["engine"]["mismatch"]:
-            report["status"] = "environment_mismatch"
-            report["violations"].extend(report["engine"]["mismatch"])
-            return report
-        geometry_failures = validate_prescription(prescription)
+        report["environment_warnings"] = list(report["engine"]["mismatch"])
+        report["official"] = not report["environment_warnings"]
+        # Structural validity only (schema, glass keys, real caps, no crossing
+        # surfaces, stop position). Thickness limits are challenge constraints
+        # and are checked below, so they report constraint_failed.
+        geometry_failures = validate_prescription(prescription, min_center_mm=0.0, min_edge_mm=0.0)
         if geometry_failures:
+            report["status"] = "invalid_prescription"
             report["violations"].extend(geometry_failures)
             return report
-        geometry = prescription_facts(prescription)
+        try:
+            geometry = prescription_facts(prescription)
+            optic = build_optic(prescription, spec.fields_deg, WAVELENGTHS_UM)
+        except ValueError as exc:  # e.g. unknown glass or unsupported catalog range
+            report["status"] = "invalid_prescription"
+            report["violations"].append(str(exc))
+            return report
         report["geometry"] = geometry
-        optic = build_optic(prescription, spec.fields_deg, WAVELENGTHS_UM)
         efl = float(np.asarray(optic.paraxial.f2()).item())
         epd = abs(float(np.asarray(optic.paraxial.EPD()).item()))
         if not np.isfinite(efl) or not np.isfinite(epd) or epd <= 0:
@@ -423,11 +445,19 @@ def evaluate_design(prescription: dict, challenge: str = "rms") -> dict[str, Any
         report["eligible"] = not report["violations"]
         if report["eligible"]:
             report["status"] = "eligible"
-            report["score"] = candidate_score
+            if report["official"]:
+                report["score"] = candidate_score
+            else:
+                report["unofficial_score"] = candidate_score
         elif all("numerical review required" in item for item in report["violations"]):
             report["status"] = "needs_numerical_review"
-    except (ArithmeticError, ValueError, RuntimeError, TypeError, KeyError, IndexError) as exc:
-        report["status"] = "evaluation_error"
+        else:
+            report["status"] = "constraint_failed"
+    except Exception as exc:  # noqa: BLE001 - every failure must produce a report
+        report["eligible"] = False
+        report["score"] = None
+        report.pop("unofficial_score", None)
+        report["status"] = "evaluator_error"
         report["violations"].append(f"Evaluation failed: {type(exc).__name__}: {exc}")
     return report
 
@@ -444,7 +474,9 @@ def main() -> int:
     if args.output:
         args.output.write_text(output + "\n")
     print(output)
-    return 0 if result["eligible"] else 2
+    if result["eligible"]:
+        return 0 if result["official"] else 3
+    return 2
 
 
 if __name__ == "__main__":
