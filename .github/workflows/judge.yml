@@ -3,16 +3,15 @@ name: judge
 # Scores pending challenge submissions and writes the results to Supabase.
 #
 # Triggers:
-#   repository_dispatch "submission": sent by the website database when a
-#     participant saves a prescription (pg_net trigger, see the website repo).
+#   workflow_dispatch: sent by the website database when a participant saves
+#     a lens file (pg_net trigger in the website repo), or run by hand from
+#     the Actions tab. The database token needs only "Actions: write"; it
+#     cannot change code or tags.
 #   schedule: every 30 minutes, in case a dispatch is lost.
-#   workflow_dispatch: run by hand from the Actions tab.
 #
 # Secrets: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 
 on:
-  repository_dispatch:
-    types: [submission]
   schedule:
     - cron: "*/30 * * * *"
   workflow_dispatch:

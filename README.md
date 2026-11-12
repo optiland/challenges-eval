@@ -188,8 +188,8 @@ lens is exported as an Optiland file.
 ## The official judge
 
 The workflow `.github/workflows/judge.yml` scores the submissions of the
-website. It runs when a participant saves a prescription, every 30 minutes,
-and by hand from the Actions tab.
+website. It runs when a participant saves a lens file (the website starts it with
+`workflow_dispatch`), every 30 minutes, and by hand from the Actions tab.
 
 - The scoring code comes from a release tag (for example `v2.1.0`), never
   from `main`. Each challenge on the website records the evaluator version that
