@@ -1,0 +1,63 @@
+name: judge
+
+# Scores pending challenge submissions and writes the results to Supabase.
+#
+# Triggers:
+#   repository_dispatch "submission": sent by the website database when a
+#     participant saves a prescription (pg_net trigger, see the website repo).
+#   schedule: every 30 minutes, in case a dispatch is lost.
+#   workflow_dispatch: run by hand from the Actions tab.
+#
+# Secrets: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
+
+on:
+  repository_dispatch:
+    types: [submission]
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+# One judge at a time. A new trigger waits for the running judge; the waiting
+# run then judges everything that is still pending.
+concurrency:
+  group: judge
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  judge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        # One entry per evaluator release that judges an open challenge.
+        # The scoring code always comes from the release tag, never from main.
+        evaluator: [v2.1.0]
+    steps:
+      - name: Check out the judge
+        uses: actions/checkout@v4
+
+      - name: Check out the evaluator release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.evaluator }}
+          path: evaluator
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: evaluator/requirements-lock.txt
+
+      - name: Install the locked environment of the release
+        run: python -m pip install -r evaluator/requirements.txt
+
+      - name: Judge pending submissions
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MPLBACKEND: Agg
+        run: python -m judge.run_pending --evaluator-dir evaluator

@@ -1,0 +1,5 @@
+{
+  "minimize-rms-spot-size": "rms",
+  "minimize-chromatic-aberration": "doublet",
+  "wide-angle-lens-optimization": "wide_angle"
+}
