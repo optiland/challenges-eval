@@ -15,7 +15,7 @@ import sys
 from dataclasses import dataclass
 from functools import lru_cache
 from importlib import metadata
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import numpy as np
@@ -116,18 +116,45 @@ def polychromatic_rms(xy: np.ndarray, pupil_weights: np.ndarray) -> dict:
     }
 
 
+DIGEST_SUFFIXES = {".py", ".csv", ".yml", ".yaml", ".npy"}
+BINARY_SUFFIXES = {".npy"}
+
+
+def tree_digest(root: Path) -> tuple[str, int]:
+    """Return a platform-independent SHA-256 digest of an installed source tree.
+
+    The digest must be equal on Linux, macOS and Windows for the same commit.
+    Two platform effects are removed:
+
+    * Order: files are sorted by their POSIX relative path. ``Path`` ordering
+      ignores case on Windows and cannot be used.
+    * Line endings: Git for Windows (``core.autocrlf=true``) checks text files
+      out with CRLF. Text files are hashed with CRLF converted to LF. Binary
+      files (``.npy``) are hashed unchanged.
+
+    Args:
+        root: Package directory to hash.
+
+    Returns:
+        Hex digest and number of hashed files.
+    """
+    paths = [p for p in root.rglob("*") if p.is_file()
+             and p.suffix in DIGEST_SUFFIXES and "__pycache__" not in p.parts]
+    relative = sorted((PurePosixPath(p.relative_to(root).as_posix()), p) for p in paths)
+    digest = hashlib.sha256()
+    for name, path in relative:
+        data = path.read_bytes()
+        if path.suffix not in BINARY_SUFFIXES:
+            data = data.replace(b"\r\n", b"\n")
+        digest.update(str(name).encode("utf-8") + b"\0")
+        digest.update(hashlib.sha256(data).digest())
+    return digest.hexdigest(), len(relative)
+
+
 def _engine_digest() -> tuple[str, int]:
     import optiland
 
-    root = Path(optiland.__file__).resolve().parent
-    digest = hashlib.sha256()
-    paths = sorted(p for p in root.rglob("*") if p.is_file()
-                   and p.suffix in {".py", ".csv", ".yml", ".yaml", ".npy"}
-                   and "__pycache__" not in p.parts)
-    for path in paths:
-        digest.update(path.relative_to(root).as_posix().encode("utf-8") + b"\0")
-        digest.update(hashlib.sha256(path.read_bytes()).digest())
-    return digest.hexdigest(), len(paths)
+    return tree_digest(Path(optiland.__file__).resolve().parent)
 
 
 @lru_cache(maxsize=1)
