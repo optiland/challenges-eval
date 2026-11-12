@@ -1,0 +1,52 @@
+{
+  "name": "Modified Cooke triplet validation fixture",
+  "stop_surface": 3,
+  "stop_radius_mm": 4.547635232746375,
+  "surfaces": [
+    {
+      "radius_mm": 22.228849902394725,
+      "thickness_after_mm": 5.0,
+      "material_after": {
+        "catalog": "HIKARI",
+        "name": "SK16"
+      },
+      "clear_radius_mm": 11.0
+    },
+    {
+      "radius_mm": -440.0215237115564,
+      "thickness_after_mm": 6.00755,
+      "material_after": "AIR",
+      "clear_radius_mm": 11.0
+    },
+    {
+      "radius_mm": -22.430492571173836,
+      "thickness_after_mm": 2.0,
+      "material_after": {
+        "catalog": "SCHOTT",
+        "name": "F2"
+      },
+      "clear_radius_mm": 7.0
+    },
+    {
+      "radius_mm": 20.49034455131587,
+      "thickness_after_mm": 4.75041,
+      "material_after": "AIR",
+      "clear_radius_mm": 7.0
+    },
+    {
+      "radius_mm": 80.46278612813539,
+      "thickness_after_mm": 5.0,
+      "material_after": {
+        "catalog": "HIKARI",
+        "name": "SK16"
+      },
+      "clear_radius_mm": 9.0
+    },
+    {
+      "radius_mm": -18.57520874491706,
+      "thickness_after_mm": 40.62528548787121,
+      "material_after": "AIR",
+      "clear_radius_mm": 9.0
+    }
+  ]
+}

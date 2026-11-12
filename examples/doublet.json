@@ -1,0 +1,31 @@
+{
+  "name": "Validation fixture: scaled Optiland CementedAchromat with achromatic paraxial correction",
+  "surfaces": [
+    {
+      "radius_mm": 61.15077480821536,
+      "thickness_after_mm": 3.0,
+      "material_after": {
+        "catalog": "SCHOTT",
+        "name": "N-BAK1"
+      },
+      "clear_radius_mm": 8.0
+    },
+    {
+      "radius_mm": -37.616963365139014,
+      "thickness_after_mm": 2.1,
+      "material_after": {
+        "catalog": "SCHOTT",
+        "name": "SF2"
+      },
+      "clear_radius_mm": 8.0
+    },
+    {
+      "radius_mm": -242.2198,
+      "thickness_after_mm": 97.27089449088534,
+      "material_after": "AIR",
+      "clear_radius_mm": 8.0
+    }
+  ],
+  "stop_surface": 0,
+  "stop_radius_mm": 6.25
+}

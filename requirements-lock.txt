@@ -1,0 +1,32 @@
+# Dependency closure installed for the reference checks, Python 3.12.14.
+# Optiland itself is pinned by exact source commit, not a development version label.
+certifi==2026.10.23
+charset-normalizer==3.5.2
+contourpy==1.4.0
+cycler==0.12.1
+fonttools==4.68.0
+idna==3.20
+iniconfig==2.3.1
+kiwisolver==1.5.1
+llvmlite==0.50.0
+matplotlib==3.11.2
+numba==0.68.1
+numpy==2.5.4
+optiland @ git+https://github.com/optiland/optiland.git@61f096bbf038b29a19681aabda5a061bf839b40c
+packaging==26.3
+pandas==3.1.1
+pillow==13.0.0
+pluggy==1.7.0
+pygments==2.21.0
+pyparsing==3.3.3
+pytest==9.2.0
+python-dateutil==4.0.0
+pyyaml==6.0.3
+requests==2.34.2
+scipy==1.18.1
+seaborn==0.13.2
+tabulate==0.10.0
+typing-extensions==4.16.0
+tzdata==2026.6
+urllib3==2.8.0
+vtk==9.7.2

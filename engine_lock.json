@@ -1,0 +1,11 @@
+{
+  "commit": "61f096bbf038b29a19681aabda5a061bf839b40c",
+  "source_catalog_sha256": "5a8a03cfbda3392360375865a6483d752edf80711a9edd46bbedb084b6fde603",
+  "hashed_files": 3889,
+  "versions": {
+    "optiland": "0.0.0+unknown",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1"
+  },
+  "python_tested": "3.12.14"
+}

@@ -1,0 +1,103 @@
+{
+  "name": "Modified Optiland ReverseTelephoto validation candidate",
+  "surfaces": [
+    {
+      "radius_mm": 43.32089174100168,
+      "thickness_after_mm": 2.2,
+      "material_after": {
+        "catalog": "SCHOTT",
+        "name": "N-SK10"
+      },
+      "clear_radius_mm": 14.20098009319844
+    },
+    {
+      "radius_mm": 16.227548591909226,
+      "thickness_after_mm": 9.574912432986677,
+      "material_after": "AIR",
+      "clear_radius_mm": 14.20098009319844
+    },
+    {
+      "radius_mm": 52.45204544253908,
+      "thickness_after_mm": 2.2,
+      "material_after": {
+        "catalog": "SCHOTT",
+        "name": "N-SK15"
+      },
+      "clear_radius_mm": 10.67086453865977
+    },
+    {
+      "radius_mm": 21.62144151958089,
+      "thickness_after_mm": 5.984320270616673,
+      "material_after": "AIR",
+      "clear_radius_mm": 10.67086453865977
+    },
+    {
+      "radius_mm": 32.052683493295945,
+      "thickness_after_mm": 4.0,
+      "material_after": {
+        "catalog": "SCHOTT",
+        "name": "N-BASF2"
+      },
+      "clear_radius_mm": 9.831626155536565
+    },
+    {
+      "radius_mm": -46.87751216915725,
+      "thickness_after_mm": 1.1968640541233346,
+      "material_after": "AIR",
+      "clear_radius_mm": 9.831626155536565
+    },
+    {
+      "radius_mm": 12.82198966244679,
+      "thickness_after_mm": 4.5,
+      "material_after": {
+        "catalog": "SCHOTT",
+        "name": "FK3"
+      },
+      "clear_radius_mm": 7.668315102973465
+    },
+    {
+      "radius_mm": -49.397048628647035,
+      "thickness_after_mm": 2.395384568097576,
+      "material_after": "AIR",
+      "clear_radius_mm": 7.668315102973465
+    },
+    {
+      "radius_mm": null,
+      "thickness_after_mm": 0.8004626793976861,
+      "material_after": "AIR",
+      "clear_radius_mm": 3.5115825010628248
+    },
+    {
+      "radius_mm": -31.71234650907916,
+      "thickness_after_mm": 2.2,
+      "material_after": {
+        "catalog": "HIKARI",
+        "name": "SF15"
+      },
+      "clear_radius_mm": 4.183521473722136
+    },
+    {
+      "radius_mm": 12.031719547084455,
+      "thickness_after_mm": 3.590592162370004,
+      "material_after": "AIR",
+      "clear_radius_mm": 4.183521473722136
+    },
+    {
+      "radius_mm": 109.61944867674706,
+      "thickness_after_mm": 3.5,
+      "material_after": {
+        "catalog": "SCHOTT",
+        "name": "N-LAK12"
+      },
+      "clear_radius_mm": 7.141436012154513
+    },
+    {
+      "radius_mm": -16.470090009274177,
+      "thickness_after_mm": 24.54395472629675,
+      "material_after": "AIR",
+      "clear_radius_mm": 7.141436012154513
+    }
+  ],
+  "stop_surface": 8,
+  "stop_radius_mm": 3.389673817425588
+}
