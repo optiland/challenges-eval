@@ -1,0 +1,267 @@
+{
+  "version": 1.0,
+  "name": "Validation fixture: scaled Optiland CementedAchromat with achromatic paraxial correction",
+  "aperture": {
+    "type": "float_by_stop_size",
+    "value": 12.5
+  },
+  "fields": {
+    "fields": [
+      {
+        "x": 0.0,
+        "y": 0.0,
+        "vx": 0.0,
+        "vy": 0.0,
+        "weight": 0.3333333333333333
+      },
+      {
+        "x": 0.0,
+        "y": 1.5,
+        "vx": 0.0,
+        "vy": 0.0,
+        "weight": 0.3333333333333333
+      },
+      {
+        "x": 0.0,
+        "y": 3.0,
+        "vx": 0.0,
+        "vy": 0.0,
+        "weight": 0.3333333333333333
+      }
+    ],
+    "telecentric": false,
+    "field_definition": {
+      "field_type": "AngleField"
+    }
+  },
+  "wavelengths": {
+    "wavelengths": [
+      {
+        "value": 0.4861327,
+        "is_primary": false,
+        "unit": "um",
+        "weight": 0.3333333333333333
+      },
+      {
+        "value": 0.5875618,
+        "is_primary": true,
+        "unit": "um",
+        "weight": 0.3333333333333333
+      },
+      {
+        "value": 0.6562725,
+        "is_primary": false,
+        "unit": "um",
+        "weight": 0.3333333333333333
+      }
+    ],
+    "polarization": "ignore"
+  },
+  "apodization": null,
+  "pickups": [],
+  "solves": {
+    "solves": []
+  },
+  "surface_group": {
+    "surfaces": [
+      {
+        "type": "ObjectSurface",
+        "geometry": {
+          "type": "Plane",
+          "cs": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": -Infinity,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "reference_cs": null
+          },
+          "radius": Infinity
+        },
+        "material_post": {
+          "type": "IdealMaterial",
+          "propagation_model": {
+            "class": "HomogeneousPropagation"
+          },
+          "index": 1.0,
+          "absorp": 0.0
+        },
+        "comment": "",
+        "thickness": Infinity
+      },
+      {
+        "type": "Surface",
+        "thickness": 3.0,
+        "geometry": {
+          "type": "StandardGeometry",
+          "cs": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "reference_cs": null
+          },
+          "radius": 61.15077480821536,
+          "conic": 0.0
+        },
+        "material_post": {
+          "type": "Material",
+          "propagation_model": {
+            "class": "HomogeneousPropagation"
+          },
+          "filename": "optiland/database/data-nk/glass/schott/N-BAK1.yml",
+          "bounds": "raise",
+          "name": "N-BAK1",
+          "reference": null,
+          "catalog": "SCHOTT",
+          "match_policy": "strict",
+          "robust_search": null,
+          "min_wavelength": null,
+          "max_wavelength": null
+        },
+        "is_stop": true,
+        "aperture": {
+          "type": "RadialAperture",
+          "r_max": 6.25,
+          "r_min": 0
+        },
+        "comment": "",
+        "interaction_model": {
+          "type": "RefractiveReflectiveModel",
+          "is_reflective": false,
+          "coating": null,
+          "bsdf": null
+        }
+      },
+      {
+        "type": "Surface",
+        "thickness": 2.1,
+        "geometry": {
+          "type": "StandardGeometry",
+          "cs": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "reference_cs": null
+          },
+          "radius": -37.616963365139014,
+          "conic": 0.0
+        },
+        "material_post": {
+          "type": "Material",
+          "propagation_model": {
+            "class": "HomogeneousPropagation"
+          },
+          "filename": "optiland/database/data-nk/glass/schott/SF2.yml",
+          "bounds": "raise",
+          "name": "SF2",
+          "reference": null,
+          "catalog": "SCHOTT",
+          "match_policy": "strict",
+          "robust_search": null,
+          "min_wavelength": null,
+          "max_wavelength": null
+        },
+        "is_stop": false,
+        "aperture": {
+          "type": "RadialAperture",
+          "r_max": 8.0,
+          "r_min": 0
+        },
+        "comment": "",
+        "interaction_model": {
+          "type": "RefractiveReflectiveModel",
+          "is_reflective": false,
+          "coating": null,
+          "bsdf": null
+        }
+      },
+      {
+        "type": "Surface",
+        "thickness": 97.27089449088534,
+        "geometry": {
+          "type": "StandardGeometry",
+          "cs": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 5.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "reference_cs": null
+          },
+          "radius": -242.2198,
+          "conic": 0.0
+        },
+        "material_post": {
+          "type": "IdealMaterial",
+          "propagation_model": {
+            "class": "HomogeneousPropagation"
+          },
+          "index": 1.0,
+          "absorp": 0.0
+        },
+        "is_stop": false,
+        "aperture": {
+          "type": "RadialAperture",
+          "r_max": 8.0,
+          "r_min": 0
+        },
+        "comment": "",
+        "interaction_model": {
+          "type": "RefractiveReflectiveModel",
+          "is_reflective": false,
+          "coating": null,
+          "bsdf": null
+        }
+      },
+      {
+        "type": "Surface",
+        "thickness": 0.0,
+        "geometry": {
+          "type": "Plane",
+          "cs": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 102.37089449088533,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "reference_cs": null
+          },
+          "radius": Infinity
+        },
+        "material_post": {
+          "type": "IdealMaterial",
+          "propagation_model": {
+            "class": "HomogeneousPropagation"
+          },
+          "index": 1.0,
+          "absorp": 0.0
+        },
+        "is_stop": false,
+        "aperture": null,
+        "comment": "",
+        "interaction_model": {
+          "type": "RefractiveReflectiveModel",
+          "is_reflective": false,
+          "coating": null,
+          "bsdf": null
+        }
+      }
+    ]
+  },
+  "ray_tracer": {
+    "ray_aiming_config": {
+      "mode": "robust",
+      "max_iter": 50,
+      "tol": 1e-09
+    }
+  }
+}

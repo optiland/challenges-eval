@@ -1,7 +1,10 @@
-# Challenge rules: version 2.0.0
+# Challenge rules: version 2.1.0
 
 These rules define the evaluator in this repository. The competition owner
-approved them on 12 November 2026. Scores of an earlier rules version keep
+approved them on 12 November 2026. Version 2.1.0 (same day, before any
+submission was judged) changes only the submission format and the clear
+radius rule: submissions are Optiland lens files (section 8), and a surface
+without a physical aperture gets an automatic real-ray clear radius. Scores of an earlier rules version keep
 their earlier meaning and are not mixed with version 2 scores.
 
 ## 1. Common optical model
@@ -33,11 +36,21 @@ their earlier meaning and are not mixed with version 2 scores.
 
 ## 2. Mechanical geometry
 
-1. Declare each physical surface's clear radius. The judge uses that fixed
-   circular aperture; it does not enlarge apertures after tracing.
-2. Declare the stop radius separately. It must be no larger than the clear
-   radius of the surface carrying the stop. The stop may be smaller than the
-   glass blank on which it lies.
+1. Clear radius of each physical surface:
+   - If the submitted file gives the surface a physical aperture
+     (`RadialAperture`), its `r_max` is the clear radius. The judge uses that
+     fixed circular aperture; it does not enlarge apertures after tracing.
+   - If not, the judge sets an automatic clear radius: the largest real-ray
+     height on that surface, over the full pupil (32 Gauss rings by 128
+     azimuths, plus 720 rays on the rim at normalized radius 1.0), at every
+     verification field and wavelength, multiplied by 1.001. Paraxial
+     semi-apertures are not used: real rays can be more than 25% higher at
+     wide field angles.
+2. The stop radius follows from the aperture definition of the file:
+   `float_by_stop_size` gives the stop diameter; `EPD` and `imageFNO` give the
+   stop radius from the paraxial marginal ray at the stop. After that the
+   judge keeps the stop fixed. The stop may be smaller than the glass blank on
+   which it lies.
 3. An element is one non-air interval between physical interfaces. A
    cemented doublet has two elements and one shared internal interface.
    A zero-thickness fictitious glass interval is not an element. Adjacent
@@ -273,3 +286,29 @@ weak edge performance. Before prize decisions, inspect and independently
 cross-check leading prescriptions, and use the same denser verification for
 close contenders. The package implements per-design evaluation, not the
 hosting or prize-adjudication process.
+
+## 8. Submission format
+
+A submission is an Optiland lens file, written with
+`optiland.fileio.save_optiland_file(lens, "my_lens.json")`. The judge reads
+only the optical design from it:
+
+- the object surface (thickness must be infinite) and a flat, untilted image
+  surface;
+- for each lens surface: spherical (`StandardGeometry`, conic 0) or plane
+  geometry, radius, thickness, `is_stop`, the material after the surface, and
+  an optional `RadialAperture` (`r_min` = 0);
+- the aperture definition: `float_by_stop_size`, `EPD` or `imageFNO`.
+
+Materials: a catalog glass (`Material` with a name and a catalog or
+reference), or air (`IdealMaterial` with index 1 and no absorption). Glass
+names are resolved strictly in the frozen catalog.
+
+The judge ignores fields, wavelengths, vignetting factors, ray aiming,
+apodization, solves and pickups in the file and lists them in
+`conversion_notes`. It rejects decentered or tilted surfaces, aspheres,
+mirrors, coatings, scattering models, other materials and other aperture
+types with `invalid_prescription`.
+
+The report contains the converted prescription (`prescription`) that was
+judged, and a note for each automatic clear radius.
