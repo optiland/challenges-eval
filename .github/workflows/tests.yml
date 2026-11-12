@@ -1,0 +1,31 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the locked environment
+        run: python -m pip install -r requirements.txt
+      - name: Run the tests
+        run: python -m pytest -q tests test_prescription.py
+      - name: Evaluate the three reference designs
+        shell: bash
+        run: |
+          for c in rms doublet wide_angle; do
+            python challenge_evaluator.py examples/$c.json --challenge $c --output ${c}_result.json > /dev/null
+            python -c "import json,sys; a=json.load(open('${c}_result.json')); b=json.load(open('validation/${c}_evaluation.json')); assert a['status']=='eligible' and a['official'], a['violations']; assert abs(a['score']-b['score'])<=1e-12*b['score'], (a['score'], b['score']); print('$c', a['score'])"
+          done

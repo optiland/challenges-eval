@@ -96,3 +96,23 @@ not established by numerical convergence or these finite tests. Before
 competition adoption, an independent broadband off-axis comparison is still
 advisable. The upstream validation discussion identifies remaining differences:
 https://github.com/optiland/optiland/issues/710
+
+## Rerun on Windows, 12 November 2026 (evaluator 2.0.0)
+
+Windows 11, Python 3.12.12, NumPy 2.5.4, SciPy 1.18.1, Optiland installed
+with `pip install -r requirements.txt` (Git `core.autocrlf=true`).
+
+- The original digest code reported `environment_mismatch` on this install.
+  Cause: `Path` sort order ignores case on Windows, and the catalog `.yml`
+  files were checked out with CRLF. The fixed digest gives the locked value
+  `5a8a03cf...`.
+- Tests: 42 passed (28 original, 4 digest tests, 10 status tests).
+- References, evaluated with the CLI:
+
+| Example | Status | Score | Recorded score |
+|---|---|---|---|
+| `rms.json` | eligible, official | 6.040034708678789 | identical |
+| `doublet.json` | eligible, official | 0.18106844456019966 | 0.18106844456019955 (relative 7e-16) |
+| `wide_angle.json` | eligible, official | 0.7033100380293447 | identical |
+
+The wide-angle evaluation took about 47 seconds on this machine.

@@ -1,7 +1,8 @@
-# Proposed challenge rules: version 2.0.0-proposal
+# Challenge rules: version 2.0.0
 
-These rules define the supplied evaluator. They are a proposal for a new
-competition version. Existing live scores belong to their existing version.
+These rules define the evaluator in this repository. The competition owner
+approved them on 12 November 2026. Scores of an earlier rules version keep
+their earlier meaning and are not mixed with version 2 scores.
 
 ## 1. Common optical model
 
@@ -239,12 +240,26 @@ field/direction must change by at most 0.005 absolute MTF. Keep the declared
 256-by-1024 score if this check passes. This is a sampling-consistency gate,
 not an independent validation of the scalar pupil-FFT approximation.
 
-The report contains `eligible`, `status`, `score`, `violations`, constraint
-values and limits, per-field metrics, ray counts, convergence results and
-engine provenance. Only `eligible: true` results have a ranked `score`.
-An unresolved trace, environment mismatch or numerical-convergence failure
-withholds ranking and explains the cause. `diagnostic_optical_score`, when
-present for an invalid design, must never be treated as a leaderboard score.
+The report contains `eligible`, `official`, `status`, `score`, `violations`,
+constraint values and limits, per-field metrics, ray counts, convergence
+results and engine provenance. `status` is exactly one of:
+
+| Status | Meaning |
+|---|---|
+| `eligible` | All checks pass. |
+| `invalid_prescription` | The file is not a valid prescription: schema, glass name, spherical cap, crossing surfaces or stop position. |
+| `constraint_failed` | A challenge requirement fails: EFL, f-number, element count, BFD, track, thickness, distortion, EPD, axial colour or glass pair. |
+| `ray_validation_failed` | A required ray is blocked, lost, totally internally reflected or mis-aimed. |
+| `needs_numerical_review` | All requirements pass, but a convergence gate fails. A maintainer reviews the design. |
+| `evaluator_error` | The evaluator failed. |
+
+`official` is true only in the locked environment (engine digest, NumPy and
+SciPy versions). Outside it, the evaluator still calculates every metric and
+lists the differences in `environment_warnings`. Only an `eligible` and
+`official` result has a ranked `score`. An eligible result outside the
+locked environment has `unofficial_score` instead. `diagnostic_optical_score`,
+when present for a design that is not eligible, must never be treated as a
+leaderboard score.
 
 ## 7. Publication and review
 

@@ -1,8 +1,9 @@
-# Optiland starter challenges: proposed version 2
+# Optiland starter challenges: evaluator v2.0.0
 
-Prepared 11 November 2026. This package is a reviewable rules proposal and a
-working reference evaluator. It is not the evaluator of the current live
-competition, and it does not reproduce an unpublished server-side judge.
+The reference evaluator for the Optiland starter challenges, rules version
+2.0.0 (approved 12 November 2026). The same code runs on your computer and in
+the official judge. The original proposal was prepared on 11 November 2026;
+the history of this repository shows every change since then.
 
 ## Recommendation
 
@@ -109,8 +110,11 @@ silently mix versions on one leaderboard.
 
 ## Run the evaluator
 
-Use a separate Python environment. The tests ran with Python 3.12.14 on the
-NumPy CPU backend. Install the pinned requirements from this folder:
+Use a separate Python environment. The tests ran with Python 3.12.14 on Linux
+and Python 3.12.12 on Windows, on the NumPy CPU backend. In another
+environment (for example Colab with other NumPy or SciPy versions) the
+evaluator still calculates every metric, but the result is marked
+`official: false`. Install the pinned requirements from this folder:
 
 ```bash
 python -m pip install -r requirements.txt
@@ -119,8 +123,9 @@ python challenge_evaluator.py examples/doublet.json --challenge doublet --output
 ```
 
 `rms`, `doublet` and `wide_angle` select the three specifications. The CLI exits
-with code 0 for an eligible entry and code 2 when it cannot assign a ranked
-score. It writes a complete JSON report, including constraints, ray failures,
+with code 0 for an eligible result in the locked environment, code 3 for an
+eligible result in another environment (`unofficial_score`), and code 2 for
+every other status. See RULES.md, section 6, for the status list. It writes a complete JSON report, including constraints, ray failures,
 per-field metrics, convergence checks and software provenance.
 
 In a notebook:
