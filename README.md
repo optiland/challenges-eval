@@ -79,10 +79,10 @@ part per million to avoid a numerical equality at the physical stop edge.
 
 ### Two deliberate objective revisions
 
-**Doublet:** minimizing lateral colour alone does not establish longitudinal
+**Doublet:** minimizing lateral chromatic aberration alone does not establish longitudinal
 achromatism. A thin lens with its stop at the lens can have wavelength-
 independent chief-ray height at a fixed sensor while its axial focal position
-still changes with wavelength. The new objective evaluates all colours on the
+still changes with wavelength. The new objective evaluates all wavelengths on the
 same sensor and explicitly limits the F-C paraxial focus separation. Bringing
 F and C to the same longitudinal location is the usual primary achromatic
 correction. [S9]
@@ -100,7 +100,7 @@ is a different design objective, not merely a rewording.
 
 ### Versioning the change
 
-The no-vignetting rule, exact wavelengths, new doublet score and axial-colour
+The no-vignetting rule, exact wavelengths, new doublet score and axial chromatic aberration
 bound, hard wide-angle distortion bound, additional verification fields and
 shared stop rules can change the ranking. Introduce them as a new challenge
 version or new round. Keep old scores attached to their old evaluator. If the
@@ -218,7 +218,7 @@ designs; their scores are not comparable across different challenges.
 | Modified cemented achromat | 2 | 100 mm | 8 | 0.181068444560 |
 | Modified reverse telephoto | 6 | 24 mm | 4 | 0.703310038029 |
 
-The tests also cover clipping rejection, missing rays, colour-centroid
+The tests also cover clipping rejection, missing rays, wavelength-centroid
 separation, preservation of the submitted sensor plane, invalid thickness,
 strict material matching, hidden overlap around a small stop, analytical
 circular-pupil MTF, chromatic contrast cancellation, the Fourier translation
@@ -268,7 +268,7 @@ displayed decimal places alone are not evidence of physical accuracy.
 - [S6] Ansys wavelength PSF combination: https://ansyshelp.ansys.com/public/Views/Secured/Zemax/v251/en/OpticStudio_User_Guide/OpticStudio_Help/topics/Huygens_Surface_MTF.html
 - [S7] Optiland distortion implementation: https://github.com/optiland/optiland/blob/61f096bbf038b29a19681aabda5a061bf839b40c/optiland/analysis/distortion.py
 - [S8] Default merit and constraints: https://www.optiland.org/docs/optimization_merit_constraints.html
-- [S9] Edmund Optics on transverse and longitudinal colour: https://www.edmundoptics.com/knowledge-center/application-notes/optics/chromatic-and-monochromatic-optical-aberrations/
+- [S9] Edmund Optics on transverse and longitudinal chromatic aberration: https://www.edmundoptics.com/knowledge-center/application-notes/optics/chromatic-and-monochromatic-optical-aberrations/
 - [S10] Independent validation discussion: https://github.com/optiland/optiland/issues/710
 - [S11] FFT implementation and frequency axes: https://github.com/optiland/optiland/blob/61f096bbf038b29a19681aabda5a061bf839b40c/optiland/mtf/fft.py
 - [S12] Chromatic focal shift: https://github.com/optiland/optiland/blob/61f096bbf038b29a19681aabda5a061bf839b40c/optiland/analysis/chromatic_focal_shift.py
